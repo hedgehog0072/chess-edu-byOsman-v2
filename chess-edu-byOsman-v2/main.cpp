@@ -6,6 +6,7 @@ SDL_Renderer* renderer = NULL;
 void tahta();
 void clickUp(int x1, int y1);
 void clickDown(int x1,int y1);
+SDL_bool done = SDL_FALSE;
 int main(int argc, char* argv[])
 {
 	if (SDL_Init(SDL_INIT_VIDEO) == 0) {
@@ -13,7 +14,7 @@ int main(int argc, char* argv[])
 
 		
 		if (SDL_CreateWindowAndRenderer(1280, 720, 0, &window, &renderer) == 0) {
-			SDL_bool done = SDL_FALSE;
+			
 			
 			SDL_SetWindowTitle(window, "CHESS by Osman v2");
 			//SDL_SetWindowResizable(window, SDL_TRUE);
@@ -42,6 +43,7 @@ int main(int argc, char* argv[])
 					
 						if (event.type == SDL_QUIT) {
 
+							done = SDL_TRUE;
 
 						}
 						

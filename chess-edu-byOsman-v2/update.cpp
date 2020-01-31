@@ -10,18 +10,22 @@ int kare = 60;
 void Indexler();
 int tahta(int x, int y);
 bool sorgu(int x, int y);
+bool sorgu(int x, int y, bool R);
 int sorguD(int x, int y);
+void log(const char*);
+extern SDL_bool done;
 struct tas
 {
 public:
 	int x1 = 0;
 	int y1 = 0;
+	bool beyaz;
+
 protected:
 	SDL_Surface* surfaceMessageT = nullptr;
 	SDL_Rect Message_rect; //create a rect
 	SDL_Texture* Message;
 	std::string isim;
-	bool beyaz;
 
 	void UInit(int xI, int yI, std::string isimI, bool beyazI)
 	{
@@ -66,7 +70,7 @@ public:
 
 };
 
-struct piyon : tas       /////// NOTE(OSMAN) ==         PIYONDAN VEZIR CIKARMA EKLENMEDI !!!!!!!!!
+struct piyon : tas       /////// TODO: NOTE(OSMAN) ==         PIYONDAN VEZIR CIKARMA EKLENMEDI !!!!!!!!!
 {
 	bool bonus = true;
 	void Init(int xI, int yI, bool beyaz)
@@ -76,7 +80,7 @@ struct piyon : tas       /////// NOTE(OSMAN) ==         PIYONDAN VEZIR CIKARMA E
 
 	}
 
-	void haraket(int x2, int y2)
+	bool haraket(int x2, int y2)
 	{
 		try
 		{
@@ -93,22 +97,29 @@ struct piyon : tas       /////// NOTE(OSMAN) ==         PIYONDAN VEZIR CIKARMA E
 
 					render();
 					bonus = false;
-					return;
+					return true;
 
 
 				}
 
 				if (y2 == y1 - 1 && (x2 == x1 + 1 || x2 == x1 + -1) && sorgu(x2, y2))
 				{
-					sorguD(x2, y2);
-					tahta(x1, y1);
-					x1 = x2;
-					y1 = y2;
+					if (sorgu(x2, y2, beyaz))
+					{
+						sorguD(x2, y2);
+						tahta(x1, y1);
+						x1 = x2;
+						y1 = y2;
+						bonus = false;
 
-					tahta(x1, y1);
+						tahta(x1, y1);
 
-					render();
-					return;
+						render();
+						return true;
+
+					}
+					throw "HATALI HAMLE P";
+
 				}
 
 				if (y2 == y1 - 1 && x2 == x1 && !sorgu(x2, y2))
@@ -118,12 +129,14 @@ struct piyon : tas       /////// NOTE(OSMAN) ==         PIYONDAN VEZIR CIKARMA E
 					y1 = y2;
 
 					tahta(x1, y1);
+					bonus = false;
 
 					render();
-					return;
+					return true;
+
 
 				}
-				throw "HATALI HAMLE";
+				throw "HATALI HAMLE P";
 
 			}
 
@@ -142,22 +155,29 @@ struct piyon : tas       /////// NOTE(OSMAN) ==         PIYONDAN VEZIR CIKARMA E
 
 					render();
 					bonus = false;
-					return;
+					return true;
+
 
 
 				}
 
 				if (y2 == y1 + 1 && (x2 == x1 + 1 || x2 == x1 + -1) && sorgu(x2, y2))
 				{
-					sorguD(x2, y2);
-					tahta(x1, y1);
-					x1 = x2;
-					y1 = y2;
+					if (sorgu(x2, y2, beyaz))
+					{
+						sorguD(x2, y2);
+						tahta(x1, y1);
+						x1 = x2;
+						y1 = y2;
+						bonus = false;
 
-					tahta(x1, y1);
+						tahta(x1, y1);
 
-					render();
-					return;
+						render();
+						return true;
+
+					}
+					throw "HATALI HAMLE P";
 				}
 				if (y2 == y1 + 1 && x2 == x1 && !sorgu(x2, y2))
 				{
@@ -167,18 +187,23 @@ struct piyon : tas       /////// NOTE(OSMAN) ==         PIYONDAN VEZIR CIKARMA E
 					y1 = y2;
 
 					tahta(x1, y1);
+					bonus = false;
 
 					render();
-					return;
+					return true;
+
 
 				}
-				throw "HATALI HAMLE";
+				throw "HATALI HAMLE P";
 			}
 
 		}
 		catch (const char* x)
 		{
-			std::cout << "[ERROR] = " << x << std::endl;
+			log(x);
+
+
+			return false;
 		}
 
 
@@ -197,7 +222,7 @@ struct kale : tas
 
 	}
 
-	void haraket(int x2, int y2)
+	bool haraket(int x2, int y2)
 	{
 		try
 		{
@@ -207,10 +232,10 @@ struct kale : tas
 			{
 				if (x2 < x1)
 				{
-					for (int i = x2; i < x1 - 1; i++)
+					for (int i = x2 + 1; i < x1; i++)
 					{
 						if (sorgu(i, y1))
-							throw "HATALI HAMLE";
+							throw "HATALI HAMLE K";
 					}
 				}
 				else
@@ -218,27 +243,33 @@ struct kale : tas
 					for (int i = x1 + 1; i < x2; i++)
 					{
 						if (sorgu(i, y1))
-							throw "HATALI HAMLE";
+							throw "HATALI HAMLE K";
 					}
 				}
-				sorguD(x2, y2);
-				tahta(x1, y1);
-				x1 = x2;
-				y1 = y2;
-				tahta(x1, y1);
+				if (sorgu(x2, y2, beyaz))
+				{
+					sorguD(x2, y2);
+					tahta(x1, y1);
+					x1 = x2;
+					y1 = y2;
 
-				render();
-				return;
+					tahta(x1, y1);
+
+					render();
+					return true;
+
+				}
+				throw "HATALI HAMLE K";
 			}
 
 			if (x1 == x2 && y1 != y2)
 			{
 				if (y2 < y1)
 				{
-					for (int i = y2; i < y1; i++)
+					for (int i = y2 + 1; i < y1; i++)
 					{
 						if (sorgu(x1, i))
-							throw "HATALI HAMLE";
+							throw "HATALI HAMLE K";
 					}
 				}
 				else
@@ -246,26 +277,36 @@ struct kale : tas
 					for (int i = y1 + 1; i < y2; i++)
 					{
 						if (sorgu(x1, i))
-							throw "HATALI HAMLE";
+							throw "HATALI HAMLE K";
 					}
 
 				}
-				sorguD(x2, y2);
-				tahta(x1, y1);
-				x1 = x2;
-				y1 = y2;
-				tahta(x1, y1);
+				if (sorgu(x2, y2, beyaz))
+				{
+					sorguD(x2, y2);
+					tahta(x1, y1);
+					x1 = x2;
+					y1 = y2;
 
-				render();
-				return;
+					tahta(x1, y1);
+
+					render();
+					return true;
+
+				}
+				throw "HATALI HAMLE K";
+
 			}
-			throw "HATALI HAMLE";
+			throw "HATALI HAMLE K";
 
 
 		}
 		catch (const char* x)
 		{
-			std::cout << "[ERROR] = " << x << std::endl;
+			log(x);
+
+
+			return false;
 		}
 
 
@@ -281,17 +322,37 @@ struct at : tas
 
 	}
 
-	void haraket(int x2, int y2)
+	bool haraket(int x2, int y2)
 	{
+		try {
+			if ((abs(x1 - x2) == 1 && abs(y1 - y2) == 2) || (abs(x1 - x2) == 2 && abs(y1 - y2) == 1))
+			{
+				if (sorgu(x2, y2, beyaz))
+				{
+					sorguD(x2, y2);
+					tahta(x1, y1);
+					x1 = x2;
+					y1 = y2;
 
-		tahta(x1, y1);
-		x1 = x2;
-		y1 = y2;
-		tahta(x1, y1);
+					tahta(x1, y1);
 
-		render();
+					render();
+					return true;
+
+				}
+				throw "HATALI HAMLE A";
 
 
+
+			}
+			throw "HATALI HAMLE A";
+		}
+		catch (const char* x)
+		{
+			log(x);
+
+			return false;
+		}
 	}
 
 };
@@ -303,7 +364,7 @@ struct fil : tas
 
 	}
 
-	void haraket(int x2, int y2)
+	bool haraket(int x2, int y2)
 	{
 
 
@@ -321,7 +382,7 @@ struct fil : tas
 						{
 
 							if (sorgu(x2 - 1 - i, y2 - 1 - i))
-								throw "HATALI HAMLE";
+								throw "HATALI HAMLE F";
 							i++;
 
 						}
@@ -334,7 +395,7 @@ struct fil : tas
 						{
 
 							if (sorgu(x2 - 1 - i, y2 + 1 + i))
-								throw "HATALI HAMLE";
+								throw "HATALI HAMLE F";
 							i++;
 
 						}
@@ -347,7 +408,7 @@ struct fil : tas
 					{
 
 						if (sorgu(x2 + 1 + i, y2 - 1 - i))
-							throw "HATALI HAMLE";
+							throw "HATALI HAMLE F";
 						i++;
 
 					}
@@ -360,7 +421,7 @@ struct fil : tas
 					{
 
 						if (sorgu(x2 + 1 + i, y2 + 1 + i))
-							throw "HATALI HAMLE";
+							throw "HATALI HAMLE F";
 						i++;
 
 					}
@@ -368,17 +429,23 @@ struct fil : tas
 
 
 
-				sorguD(x2, y2);
-				tahta(x1, y1);
-				x1 = x2;
-				y1 = y2;
-				tahta(x1, y1);
+				if (sorgu(x2, y2, beyaz))
+				{
+					sorguD(x2, y2);
+					tahta(x1, y1);
+					x1 = x2;
+					y1 = y2;
 
-				render();
-				return;
+					tahta(x1, y1);
+
+					render();
+					return true;
+					;
+				}
+				throw "HATALI HAMLE F";
 
 			}
-			throw "HATALI HAMLE";
+			throw "HATALI HAMLE F";
 
 
 
@@ -387,7 +454,9 @@ struct fil : tas
 
 		catch (const char* x)
 		{
-			std::cout << "[ERROR] = " << x << std::endl;
+			log(x);
+
+			return false;
 		}
 
 
@@ -403,39 +472,248 @@ struct vezir : tas
 
 	}
 
-	void haraket(int x2, int y2)
+	bool haraket(int x2, int y2)
 	{
+		try {
+			if (std::abs(x2 - x1) == std::abs(y2 - y1))
+			{
+				if (x2 > x1)
+				{
+					if (y2 > y1)
+					{
+						int i = 0;
+						while (x2 - 1 - i != x1 && y2 - 1 - i != y1)
+						{
 
-		tahta(x1, y1);
-		x1 = x2;
-		y1 = y2;
-		tahta(x1, y1);
+							if (sorgu(x2 - 1 - i, y2 - 1 - i))
+								throw "HATALI HAMLE V";
+							i++;
 
-		render();
+						}
+					}
+					else
+					{
+
+						int i = 0;
+						while (x2 - 1 - i != x1 && y2 + 1 + i != y1)
+						{
+
+							if (sorgu(x2 - 1 - i, y2 + 1 + i))
+								throw "HATALI HAMLE V";
+							i++;
+
+						}
+					}
+				}
+				else if (y2 > y1)
+				{
+					int i = 0;
+					while (x2 + 1 + i != x1 && y2 - 1 - i != y1)
+					{
+
+						if (sorgu(x2 + 1 + i, y2 - 1 - i))
+							throw "HATALI HAMLE V";
+						i++;
+
+					}
+				}
+
+				else
+				{
+					int i = 0;
+					while (x2 + 1 + i != x1 && y2 + 1 + i != y1)
+					{
+
+						if (sorgu(x2 + 1 + i, y2 + 1 + i))
+							throw "HATALI HAMLE V";
+						i++;
+
+					}
+				}
+
+
+
+				if (sorgu(x2, y2, beyaz))
+				{
+					sorguD(x2, y2);
+					tahta(x1, y1);
+					x1 = x2;
+					y1 = y2;
+
+					tahta(x1, y1);
+
+					render();
+					return true;
+
+				}
+				throw "HATALI HAMLE V";
+			}
+
+			if (x1 != x2 && y1 == y2)
+			{
+				if (x2 < x1)
+				{
+					for (int i = x2 + 1; i < x1; i++)
+					{
+						if (sorgu(i, y1))
+							throw "HATALI HAMLE V";
+					}
+				}
+				else
+				{
+					for (int i = x1 + 1; i < x2; i++)
+					{
+						if (sorgu(i, y1))
+							throw "HATALI HAMLE V";
+					}
+				}
+				if (sorgu(x2, y2, beyaz))
+				{
+					sorguD(x2, y2);
+					tahta(x1, y1);
+					x1 = x2;
+					y1 = y2;
+
+					tahta(x1, y1);
+
+					render();
+					return true;
+
+				}
+				throw "HATALI HAMLE V";
+			}
+
+			if (x1 == x2 && y1 != y2)
+			{
+				if (y2 < y1)
+				{
+					for (int i = y2 + 1; i < y1; i++)
+					{
+						if (sorgu(x1, i))
+							throw "HATALI HAMLE V";
+					}
+				}
+				else
+				{
+					for (int i = y1 + 1; i < y2; i++)
+					{
+						if (sorgu(x1, i))
+							throw "HATALI HAMLE V";
+					}
+
+				}
+				if (sorgu(x2, y2, beyaz))
+				{
+					sorguD(x2, y2);
+					tahta(x1, y1);
+					x1 = x2;
+					y1 = y2;
+
+					tahta(x1, y1);
+
+					render();
+					return true;
+
+				}
+				throw "HATALI HAMLE V";
+			}
+			throw "HATALI HAMLE V";
+
+		}
+		catch (const char* x)
+		{
+			log(x);
+
+			return false;
+		}
 
 
 	}
 
 };
+kale* sorguR(int x, int y, bool R);
 
 struct sah : tas
 {
+
+	bool bonus = true;
 	void Init(int xI, int yI, bool beyaz)
 	{
 		UInit(xI, yI, "S", beyaz);
 
 	}
 
-	void haraket(int x2, int y2)
+	bool haraket(int x2, int y2)
 	{
+		try
+		{
+			if (abs(x2 - x1) == 2 && y1 == y2 && bonus)
+			{
+				if (x2 > x1)
+				{
+					if (sorguR((x1 + 3), y1, beyaz) != nullptr)
+					{
+						if ((*sorguR((x1 + 3), y1, beyaz)).haraket((x1 + 1), y1))
+						{
+							tahta(x1, y1);
+							x1 = x2;
+							y1 = y2;
 
-		tahta(x1, y1);
-		x1 = x2;
-		y1 = y2;
+							tahta(x1, y1);
+							bonus = false;
+							render();
+							return true;
+						}
+					}
+				}
+				if (x2 < x1)
+				{
+					if (sorguR((x1 - 4), y1, beyaz) != nullptr)
+					{
+						if ((*sorguR((x1 - 4), y1, beyaz)).haraket((x1 - 1), y1))
+						{
+							tahta(x1, y1);
+							x1 = x2;
+							y1 = y2;
 
-		tahta(x1, y1);
+							tahta(x1, y1);
+							bonus = false;
+							render();
+							return true;
+						}
+					}
+				}
 
-		render();
+			}
+
+
+
+			if (abs(x2 - x1) <= 1 && abs(y2 - y1) <= 1)
+			{
+				if (sorgu(x2, y2, beyaz))
+				{
+					sorguD(x2, y2);
+					tahta(x1, y1);
+					x1 = x2;
+					y1 = y2;
+
+					tahta(x1, y1);
+					bonus = false;
+					render();
+					return true;
+
+				}
+				throw "HATALI HAMLE S";
+			}
+			throw "HATALI HAMLE S";
+
+		}
+		catch (const char* x)
+		{
+			log(x);
+
+			return false;
+		}
 
 
 	}
@@ -683,6 +961,132 @@ bool sorgu(int x, int y)
 
 }
 
+bool sorgu(int x, int y, bool R)
+{
+	int deneme;
+	for (deneme = 0; deneme < sizeof(piyonlar) / sizeof(piyon); deneme++)
+	{
+		if (piyonlar[deneme].x1 == x && piyonlar[deneme].y1 == y)
+		{
+			if (piyonlar[deneme].beyaz == true && R == false || piyonlar[deneme].beyaz == false && R == true)
+			{
+				return true;
+
+			}
+
+			return false;
+
+		}
+
+	}
+	for (deneme = 0; deneme < sizeof(kaleler) / sizeof(kale); deneme++)
+	{
+		if (kaleler[deneme].x1 == x && kaleler[deneme].y1 == y)
+		{
+			if (kaleler[deneme].beyaz == true && R == false || kaleler[deneme].beyaz == false && R == true)
+			{
+				return true;
+
+			}
+
+			return false;
+
+		}
+
+	}
+	for (deneme = 0; deneme < sizeof(atlar) / sizeof(at); deneme++)
+	{
+		if (atlar[deneme].x1 == x && atlar[deneme].y1 == y)
+		{
+			if (atlar[deneme].beyaz == true && R == false || atlar[deneme].beyaz == false && R == true)
+			{
+				return true;
+
+			}
+
+			return false;
+
+		}
+
+	}
+	for (deneme = 0; deneme < sizeof(filler) / sizeof(kale); deneme++)
+	{
+		if (filler[deneme].x1 == x && filler[deneme].y1 == y)
+		{
+			if (filler[deneme].beyaz == true && R == false || filler[deneme].beyaz == false && R == true)
+			{
+				return true;
+
+			}
+
+			return false;
+
+		}
+
+	}
+	for (deneme = 0; deneme < sizeof(vezirler) / sizeof(kale); deneme++)
+	{
+		if (vezirler[deneme].x1 == x && vezirler[deneme].y1 == y)
+		{
+			if (vezirler[deneme].beyaz == true && R == false || vezirler[deneme].beyaz == false && R == true)
+			{
+				return true;
+
+			}
+
+			return false;
+
+		}
+
+	}
+	for (deneme = 0; deneme < sizeof(sahlar) / sizeof(kale); deneme++)
+	{
+		if (sahlar[deneme].x1 == x && sahlar[deneme].y1 == y)
+		{
+			if (sahlar[deneme].beyaz == true && R == false || sahlar[deneme].beyaz == false && R == true)
+			{
+				return true;
+
+			}
+
+			return false;
+
+		}
+
+	}
+
+	return true;
+
+}
+
+kale* sorguR(int x, int y, bool R)
+{
+	int deneme;
+
+
+
+	for (deneme = 0; deneme < sizeof(kaleler) / sizeof(kale); deneme++)
+	{
+		if (kaleler[deneme].x1 == x && kaleler[deneme].y1 == y)
+		{
+			if (kaleler[deneme].beyaz == true && R == true || kaleler[deneme].beyaz == false && R == false)
+			{
+				return &kaleler[deneme];
+			}
+
+			return nullptr;
+
+		}
+
+	}
+
+
+	return nullptr;
+
+}
+
+
+
 int sorguD(int x, int y)
 {
 	int denemeD;
@@ -738,12 +1142,52 @@ int sorguD(int x, int y)
 		if (sahlar[denemeD].x1 == x && sahlar[denemeD].y1 == y)
 		{
 			sahlar[denemeD].tasDelete();
+			std::string end;
+			end = "SAH MAT KAZANAN ";
+			sahlar[denemeD].beyaz ? end += "BEYAZ" : end += "SIYAH";
+			//done = SDL_TRUE;  NOTE(Osman): BUNU ACIK BIRAKSAM MI BI SEY OLAMADIM
+			
+
+			log(end.c_str());
 			return denemeD;
 		}
 
 	}
 
 	return -1;
+
+}
+
+void log(const char* x)
+{
+	TTF_Font* Sans;
+	Sans = TTF_OpenFont("bold.ttf", 16);
+	//TTF_OpenFontIndex("arial.ttf", 16, 0);
+
+	if (!Sans) {
+		printf("TTF_OpenFont: %s\n", TTF_GetError());
+		// handle error
+	}
+
+	SDL_Surface* surfaceMessageX = IMG_Load("siyah.png");
+	SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessageX); //now you can convert it into a texture
+	SDL_Rect Message_rect;
+	Message_rect.x = kare * 10;
+	Message_rect.y = kare * 3;
+	Message_rect.w = kare * 6;
+	Message_rect.h = kare * 2;
+
+
+	SDL_RenderCopy(renderer, Message, NULL, &Message_rect); //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
+
+	SDL_Color Red = { 255,0,0 };
+
+	surfaceMessageX = TTF_RenderText_Solid(Sans, x, Red);
+	Message = SDL_CreateTextureFromSurface(renderer, surfaceMessageX); //now you can convert it into a texture
+
+	SDL_RenderCopy(renderer, Message, NULL, &Message_rect); //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
+
+	std::cout << x << std::endl;
 
 }
 
@@ -781,16 +1225,7 @@ void Indexler()
 
 		if (a == 1)
 		{
-			SDL_Color Red = { 255,0,0 };
-			surfaceMessage = TTF_RenderText_Solid(Sans, "Welcome", Red);
-			Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //now you can convert it into a texture
-			Message_rect.x = kare * 10;
-			Message_rect.y = kare * 3;
-			Message_rect.w = kare * 3;
-			Message_rect.h = kare * 2;
-
-			SDL_RenderCopy(renderer, Message, NULL, &Message_rect); //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
-
+			log("Welcome");
 		}
 
 	}
@@ -869,11 +1304,17 @@ bool haraket = false;
 static int deneme = 0;
 int xB;
 int yB;
+bool SiraBeyaz = true;
 void clickDown(int x1, int y1)
 {
 
 	xB = x1 / kare;
 	yB = y1 / kare;
+	if (yB > 7 || xB > 7)
+	{
+		log("HATA TAHTA DISI");
+		return;
+	}
 
 	if (sorguH(xB, yB) != -1)
 	{
@@ -883,44 +1324,155 @@ void clickDown(int x1, int y1)
 
 }
 
+void resetH()
+{
+	piyonlarH = false;
+	kalelerH = false;
+	atlarH = false;
+	fillerH = false;
+	vezirlerH = false;
+	sahlarH = false;
+}
+
+
 void clickUp(int x1, int y1)
 {
 	int x = x1 / kare;
 	int y = y1 / kare;
-	if (xB == x && yB == y)
+	if (y > 7 || x > 7)
 	{
+		log("HATA");
+		x1 = 0;
+		y1 = 0;
+		xB = 0;
+		yB = 0;
 		return;
 	}
 
+	if (xB == x && yB == y)
+	{
+		resetH();
+
+		return;
+	}
+
+
 	if (piyonlarH)
 	{
-		piyonlar[deneme].haraket(x, y);
-		piyonlarH = false;
+		if (piyonlar[deneme].beyaz == SiraBeyaz)
+		{
+			if (!(piyonlar[deneme].haraket(x, y)))
+			{
+				resetH();
+				return;
+			}
+			resetH();
+
+		}
+
+		else
+		{
+			log("SIRA HATASI");
+			resetH();
+			return;
+		}
 	}
 	if (kalelerH)
 	{
-		kaleler[deneme].haraket(x, y);
-		kalelerH = false;
+		if (kaleler[deneme].beyaz == SiraBeyaz)
+		{
+			if (!(kaleler[deneme].haraket(x, y)))
+			{
+				resetH();
+				return;
+			}
+			resetH();
+		}
+		else
+		{
+			log("SIRA HATASI");
+			resetH();
+			return;
+		}
 	}
 	if (atlarH)
 	{
-		atlar[deneme].haraket(x, y);
-		atlarH = false;
+		if (atlar[deneme].beyaz == SiraBeyaz)
+		{
+			if (!(atlar[deneme].haraket(x, y)))
+			{
+				resetH();
+				return;
+			}
+			resetH();
+		}
+		else
+		{
+			log("SIRA HATASI");
+			resetH();
+			return;
+		}
+
 	}if (fillerH)
 	{
-		filler[deneme].haraket(x, y);
-		fillerH = false;
+		if (filler[deneme].beyaz == SiraBeyaz)
+		{
+
+			if (!(filler[deneme].haraket(x, y)))
+			{
+				resetH();
+				return;
+			}
+
+			resetH();
+		}
+		else
+		{
+			log("SIRA HATASI");
+			resetH();
+			return;
+		}
+
 	}if (vezirlerH)
 	{
-		vezirler[deneme].haraket(x, y);
-		vezirlerH = false;
+		if (vezirler[deneme].beyaz == SiraBeyaz)
+		{
+			if (!(vezirler[deneme].haraket(x, y)))
+			{
+				resetH();
+				return;
+			}
+			resetH();
+		}
+		else
+		{
+			log("SIRA HATASI");
+			resetH();
+			return;
+		}
+
 	}if (sahlarH)
 	{
-		sahlar[deneme].haraket(x, y);
-		sahlarH = false;
+		if (sahlar[deneme].beyaz == SiraBeyaz)
+		{
+
+			if (!(sahlar[deneme].haraket(x, y)))
+			{
+				resetH();
+				return;
+			}
+			resetH();
+		}
+		else
+		{
+			log("SIRA HATASI");
+			resetH();
+			return;
+		}
+
 
 	}
-
+	SiraBeyaz = !SiraBeyaz;
 }
 
 
