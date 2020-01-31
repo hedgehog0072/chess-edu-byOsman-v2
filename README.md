@@ -1,2 +1,2 @@
 # chess-edu-byOsman-v2
- a
+ It is not a complete game.
